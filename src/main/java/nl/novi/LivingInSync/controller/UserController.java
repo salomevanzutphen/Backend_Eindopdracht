@@ -82,4 +82,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getAuthenticatedUser(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            UserDto userDTO = userService.getUser(username);
+            return ResponseEntity.ok(userDTO);
+        } catch (UsernameNotFoundException e) {
+            logger.warning("User not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            logger.severe("Error retrieving user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

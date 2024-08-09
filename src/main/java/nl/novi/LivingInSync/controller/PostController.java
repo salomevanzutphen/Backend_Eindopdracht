@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
@@ -44,7 +45,10 @@ public class PostController {
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Object> createPost(
-            @Valid @RequestBody PostInputDto postInputDto,
+            @RequestPart ("file") MultipartFile file,
+            @RequestPart ("title") String title,
+            @RequestPart ("name") String name,
+            @RequestPart ("description") String description,
             BindingResult br,
             @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
@@ -56,6 +60,11 @@ public class PostController {
             }
             return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
         }
+        PostInputDto postInputDto = new PostInputDto();
+      //  postInputDto.setImage();
+        postInputDto.setTitle(title);
+        postInputDto.setName(name);
+        postInputDto.setDescription(description);
 
         // Pass both postInputDto and userDetails to the service
         Long id = postService.createPost(postInputDto, userDetails);

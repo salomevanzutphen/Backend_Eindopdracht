@@ -67,7 +67,7 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setBirthday(userDTO.getBirthday());
 
-        // Default role is user
+        // Default role of everyone who registers is user
         Set<Authority> authorities = new HashSet<>();
         authorities.add(new Authority(userDTO.getUsername(), "ROLE_USER"));
         user.setAuthorities(authorities);
@@ -81,6 +81,7 @@ public class UserService {
         userDTO.setName(user.getName());
         userDTO.setEmail(user.getEmail());
         userDTO.setBirthday(user.getBirthday());
+        userDTO.setAuthorities(user.getAuthorities());
         // Do not set the password for output
         return userDTO;
     }

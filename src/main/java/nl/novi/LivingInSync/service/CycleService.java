@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CycleService {
@@ -24,44 +25,55 @@ public class CycleService {
     @Autowired
     public CycleService(CycleRepository cycleRepository, UserRepository userRepository) {
         this.cycleRepository = cycleRepository;
-
         this.userRepository = userRepository;
     }
 
-    public CycleOutputDto createCycle(CycleInputDto cycleInputDto, UserDetails userDetails) {
-//
-        Cycle cycle = mapToEntity(cycleInputDto);
-        User u = userRepository.getReferenceById(userDetails.getUsername());
-        cycle.setCycleUser(u);
+    public CycleOutputDto createOrUpdateCycle(CycleInputDto cycleInputDto, UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Optional<Cycle> existingCycleOpt = cycleRepository.findByCycleUser(user);
+        Cycle cycle;
+
+        if (existingCycleOpt.isPresent()) {
+            // Update existing cycle
+            cycle = existingCycleOpt.get();
+            cycle.setStartDate(cycleInputDto.getStartDate());
+        } else {
+            // Create a new cycle
+            cycle = mapToEntity(cycleInputDto);
+            cycle.setCycleUser(user);
+        }
+
         cycle = cycleRepository.save(cycle);
         List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        CycleOutputDto outputDto = new CycleOutputDto();
-        outputDto.setId(cycle.getId());
-        outputDto.setPhases(phases);
+        CycleOutputDto outputDto = mapToOutputDto(cycle, phases);
         return outputDto;
     }
 
-    public CycleOutputDto getCycle(Long id) {
-        Cycle cycle = cycleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cycle not found"));
+    public CycleOutputDto getUserCycle(UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Cycle cycle = cycleRepository.findByCycleUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Cycle not found for the user"));
+
         List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        CycleOutputDto outputDto = new CycleOutputDto();
-        outputDto.setId(cycle.getId());
-        outputDto.setPhases(phases);
-        return outputDto;
+        return mapToOutputDto(cycle, phases);
     }
 
-    public CycleOutputDto updateCycle(Long id, CycleInputDto cycleInputDto) {
-        Cycle cycle = cycleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cycle not found"));
+    public CycleOutputDto updateCycleForUser(CycleInputDto cycleInputDto, UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Cycle cycle = cycleRepository.findByCycleUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Cycle not found for the user"));
+
         cycle.setStartDate(cycleInputDto.getStartDate());
-        cycleRepository.save(cycle);
+        cycle = cycleRepository.save(cycle);
         List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        CycleOutputDto outputDto = new CycleOutputDto();
-        outputDto.setId(cycle.getId());
-        outputDto.setPhases(phases);
-        return outputDto;
+        return mapToOutputDto(cycle, phases);
     }
-
 
     private Cycle mapToEntity(CycleInputDto cycleInputDto) {
         Cycle cycle = new Cycle();
@@ -69,14 +81,12 @@ public class CycleService {
         return cycle;
     }
 
-    private CycleOutputDto mapToOutputDto(Cycle cycle) {
-        List<PhaseDto> phases = createPhases(cycle.getStartDate());
+    private CycleOutputDto mapToOutputDto(Cycle cycle, List<PhaseDto> phases) {
         CycleOutputDto outputDto = new CycleOutputDto();
         outputDto.setId(cycle.getId());
         outputDto.setPhases(phases);
         return outputDto;
     }
-
 
     public List<PhaseDto> createPhases(LocalDate startDate) {
         List<PhaseDto> phases = new ArrayList<>();
@@ -107,7 +117,6 @@ public class CycleService {
         return phases;
     }
 
-
     private PhaseDto mapToPhaseDto(Phase phase) {
         PhaseDto phaseDto = new PhaseDto();
         phaseDto.setPhaseName(phase.getPhase());
@@ -115,9 +124,4 @@ public class CycleService {
         phaseDto.setEndDate(phase.getEndDate());
         return phaseDto;
     }
-
-
-
 }
-
-

@@ -102,3 +102,5 @@ public class PostService {
         return postOutputDto;
     }
 }
+
+//methode om een foto om te zetten naar een byte array
