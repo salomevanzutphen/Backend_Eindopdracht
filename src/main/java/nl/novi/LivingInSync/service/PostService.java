@@ -10,7 +10,6 @@ import nl.novi.LivingInSync.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ public class PostService {
         this.userRepository = userRepository;
     }
 
-    public Long createPost(PostInputDto postInputDto, UserDetails userDetails) throws IOException {
+    public Long createPost(PostInputDto postInputDto, UserDetails userDetails) {
         Post post = mapToEntity(postInputDto);
 
         // Retrieve the authenticated admin user
@@ -53,15 +52,12 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public void updatePost(Long id, PostInputDto postInputDto) throws IOException {
+    public void updatePost(Long id, PostInputDto postInputDto) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         post.setTitle(postInputDto.getTitle());
         post.setName(postInputDto.getName());
         post.setDescription(postInputDto.getDescription());
-        if (postInputDto.getImage() != null) {
-            post.setImage(postInputDto.getImage());
-        }
         postRepository.save(post);
     }
 
@@ -81,14 +77,11 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    private Post mapToEntity(PostInputDto postInputDto) throws IOException {
+    private Post mapToEntity(PostInputDto postInputDto) {
         Post post = new Post();
         post.setTitle(postInputDto.getTitle());
         post.setName(postInputDto.getName());
         post.setDescription(postInputDto.getDescription());
-        if (postInputDto.getImage() != null) {
-            post.setImage(postInputDto.getImage());
-        }
         return post;
     }
 
@@ -98,9 +91,6 @@ public class PostService {
         postOutputDto.setTitle(post.getTitle());
         postOutputDto.setName(post.getName());
         postOutputDto.setDescription(post.getDescription());
-        postOutputDto.setImage(post.getImage());
         return postOutputDto;
     }
 }
-
-//methode om een foto om te zetten naar een byte array

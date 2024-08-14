@@ -6,14 +6,12 @@ public class PostOutputDto {
     private String title;
     private String name;
     private String description;
-    private byte[] image;
 
     // Default constructor
     public PostOutputDto() {
     }
 
     // Getters and setters
-
     public Long getId() {
         return id;
     }
@@ -45,14 +43,4 @@ public class PostOutputDto {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-
 }

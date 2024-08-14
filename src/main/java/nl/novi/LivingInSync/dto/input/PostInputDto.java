@@ -13,16 +13,11 @@ public class PostInputDto {
     @NotBlank
     private String description;
 
-    private byte[] image;
-
-
-
     // Default constructor
     public PostInputDto() {
     }
 
     // Getters and setters
-
     public String getTitle() {
         return title;
     }
@@ -46,17 +41,4 @@ public class PostInputDto {
     public void setDescription(String description) {
         this.description = description;
     }
-
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-
 }
-
-
-
