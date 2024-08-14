@@ -19,13 +19,13 @@ public class Post {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Lob
-    @Column(name = "image")
-    private byte[] image;
-
     @ManyToOne
     @JoinColumn(name = "admin_id", referencedColumnName = "username", nullable = false)
     private User admin;
+
+    //Link naar de image data
+    @OneToOne(mappedBy = "post")
+    private ImageData imageData;
 
     // Getters and setters
 
@@ -64,13 +64,6 @@ public class Post {
         this.description = description;
     }
 
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
 
     public User getAdmin() {
         return admin;
@@ -79,4 +72,16 @@ public class Post {
     public void setAdmin(User admin) {
         this.admin = admin;
     }
+
+    public void setImage(ImageData imgData){
+        this.imageData = imgData;
+    }
+
+    public ImageData getImageData(){
+        return imageData;
+    }
+
+
+
+
 }

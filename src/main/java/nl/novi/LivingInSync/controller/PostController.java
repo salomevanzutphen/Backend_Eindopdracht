@@ -43,9 +43,8 @@ public class PostController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Object> createPost(
-            @RequestPart ("file") MultipartFile file,
+            @RequestPart (value = "file", required = false) MultipartFile file,
             @RequestPart ("title") String title,
             @RequestPart ("name") String name,
             @RequestPart ("description") String description,
@@ -77,7 +76,6 @@ public class PostController {
 
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> updatePost(@PathVariable Long id, @Valid @RequestBody PostInputDto postInputDto, BindingResult br, @AuthenticationPrincipal UserDetails userDetails) throws IOException {
         if (br.hasFieldErrors()) {
             StringBuilder sb = new StringBuilder();
@@ -93,7 +91,6 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> deletePost(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
