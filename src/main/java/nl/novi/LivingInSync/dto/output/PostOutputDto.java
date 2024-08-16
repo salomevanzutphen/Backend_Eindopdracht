@@ -7,6 +7,9 @@ public class PostOutputDto {
     private String name;
     private String description;
 
+    private byte[] imgdata;
+
+
     // Default constructor
     public PostOutputDto() {
     }
@@ -42,5 +45,13 @@ public class PostOutputDto {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public byte[] getImgdata() {
+        return imgdata;
+    }
+
+    public void setImgdata(byte[] imgdata) {
+        this.imgdata = imgdata;
     }
 }

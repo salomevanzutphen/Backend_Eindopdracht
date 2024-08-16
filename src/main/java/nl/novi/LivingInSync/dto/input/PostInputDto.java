@@ -1,6 +1,7 @@
 package nl.novi.LivingInSync.dto.input;
 
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.multipart.MultipartFile;
 
 public class PostInputDto {
 
@@ -13,11 +14,16 @@ public class PostInputDto {
     @NotBlank
     private String description;
 
+    private MultipartFile image;
+
+
+
     // Default constructor
     public PostInputDto() {
     }
 
     // Getters and setters
+
     public String getTitle() {
         return title;
     }
@@ -41,4 +47,16 @@ public class PostInputDto {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
+    }
+
 }
+
+
+
