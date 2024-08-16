@@ -1,4 +1,4 @@
-package com.example.service;
+package com.example.serviceTest;
 
 import nl.novi.LivingInSync.dto.UserDto;
 import nl.novi.LivingInSync.model.User;

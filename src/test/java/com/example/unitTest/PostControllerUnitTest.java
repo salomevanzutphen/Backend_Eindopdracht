@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.unitTest;
 
 import nl.novi.LivingInSync.LivingInSyncApplication;
 import nl.novi.LivingInSync.controller.PostController;
@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,7 +50,7 @@ class PostControllerUnitTest {
     @Test
     @WithMockUser(username="testuser", roles="ADMIN")
     void shouldRetrieveCorrectPost() throws Exception {
-        byte[] imageBytes = "test.jpg".getBytes();
+        byte[] imageBytes = "test image content".getBytes();
         String imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
 
         PostOutputDto postOutputDto = new PostOutputDto();
@@ -57,7 +58,7 @@ class PostControllerUnitTest {
         postOutputDto.setTitle("Test Title");
         postOutputDto.setName("Test Name");
         postOutputDto.setDescription("Test Description");
-        postOutputDto.setImage(imageBytes);
+        postOutputDto.setImgdata(imageBytes);
 
         Mockito.when(postService.getPost(1L)).thenReturn(postOutputDto);
 
@@ -69,6 +70,6 @@ class PostControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title", is("Test Title")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Test Name")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description", is("Test Description")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.image", is(imageBase64)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.imgdata", is(imageBase64)));
     }
 }
