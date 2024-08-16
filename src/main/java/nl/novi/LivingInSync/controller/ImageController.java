@@ -1,6 +1,5 @@
 package nl.novi.LivingInSync.controller;
 
-
 import nl.novi.LivingInSync.model.ImageData;
 import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.repository.ImageDataRepository;
@@ -18,7 +17,6 @@ import java.util.Optional;
 @RequestMapping("/image")
 public class ImageController {
 
-
     private final ImageDataService imageDataService;
     private final ImageDataRepository imageDataRepository;
     private final PostRepository postRepository;
@@ -30,13 +28,11 @@ public class ImageController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> uploadImage(@RequestParam("file")MultipartFile multipartFile, @RequestParam Long id) throws IOException {
-      String image = imageDataService.uploadImage(multipartFile, id);
-      return ResponseEntity.ok("image has been uploaded, " + image);
+    public ResponseEntity<Object> uploadImage(@RequestParam("file") MultipartFile multipartFile, @RequestParam Long id) throws IOException {
+        String image = imageDataService.uploadImage(multipartFile, id);
+        return ResponseEntity.ok("Image has been uploaded, " + image);
     }
 
-//Je kunt verschillende types ontvangen, zoals pdf of image jpg. moet ik dat definieren?
-    //MediaType.IMAGE_JPEG
     @GetMapping("/{id}")
     public ResponseEntity<Object> downloadImage(@PathVariable Long id) throws IOException {
         byte[] image = imageDataService.downloadImage(id);
@@ -46,4 +42,15 @@ public class ImageController {
         return ResponseEntity.ok().contentType(mediaType).body(image);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateImage(@PathVariable Long id, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        String updatedImage = imageDataService.updateImage(id, multipartFile);
+        return ResponseEntity.ok("Image has been updated, " + updatedImage);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> deleteImage(@PathVariable Long id) {
+        imageDataService.deleteImage(id);
+        return ResponseEntity.ok("Image has been deleted");
+    }
 }
