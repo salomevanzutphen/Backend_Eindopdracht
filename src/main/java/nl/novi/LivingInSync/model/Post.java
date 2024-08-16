@@ -19,12 +19,13 @@ public class Post {
     @Column(name = "description", nullable = false)
     private String description;
 
+
     @ManyToOne
     @JoinColumn(name = "admin_id", referencedColumnName = "username", nullable = false)
     private User admin;
 
     //Link naar de image data
-    @OneToOne(mappedBy = "post")
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private ImageData imageData;
 
     // Getters and setters

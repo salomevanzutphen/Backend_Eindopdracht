@@ -1,6 +1,7 @@
 package nl.novi.LivingInSync.controller;
 
 import nl.novi.LivingInSync.exception.ResourceNotFoundException;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +31,40 @@ public class PostController {
         this.postService = service;
     }
 
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<Object> createPost(
+            @RequestPart("title") String title,
+            @RequestPart("name") String name,
+            @RequestPart("description") String description,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            BindingResult br,
+            @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+
+        if (br.hasFieldErrors()) {
+            StringBuilder sb = new StringBuilder();
+            for (FieldError fe : br.getFieldErrors()) {
+                sb.append(fe.getField()).append(": ");
+                sb.append(fe.getDefaultMessage()).append("\n");
+            }
+            return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
+        }
+
+        PostInputDto postInputDto = new PostInputDto();
+        postInputDto.setTitle(title);
+        postInputDto.setName(name);
+        postInputDto.setDescription(description);
+        postInputDto.setImage(image);
+
+        // Pass both postInputDto and userDetails to the service
+        Long id = postService.createPost(postInputDto, userDetails);
+
+        URI uri = URI.create(ServletUriComponentsBuilder
+                .fromCurrentRequest().path("/" + id).toUriString());
+
+        return ResponseEntity.created(uri).body(id);
+    }
+
+
     @GetMapping("/{id}")
     public ResponseEntity<PostOutputDto> getPost(@PathVariable Long id) {
         PostOutputDto postOutputDto = postService.getPost(id);
@@ -42,12 +77,14 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @PostMapping
-    public ResponseEntity<Object> createPost(
-            @RequestPart (value = "file", required = false) MultipartFile file,
-            @RequestPart ("title") String title,
-            @RequestPart ("name") String name,
-            @RequestPart ("description") String description,
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updatePost(
+            @PathVariable Long id,
+            @RequestPart("title") String title,
+            @RequestPart("name") String name,
+            @RequestPart("description") String description,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             BindingResult br,
             @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
@@ -59,32 +96,12 @@ public class PostController {
             }
             return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
         }
+
         PostInputDto postInputDto = new PostInputDto();
-      //  postInputDto.setImage();
         postInputDto.setTitle(title);
         postInputDto.setName(name);
         postInputDto.setDescription(description);
-
-        // Pass both postInputDto and userDetails to the service
-        Long id = postService.createPost(postInputDto, userDetails);
-
-        URI uri = URI.create(ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/" + id).toUriString());
-
-        return ResponseEntity.created(uri).body(id);
-    }
-
-
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updatePost(@PathVariable Long id, @Valid @RequestBody PostInputDto postInputDto, BindingResult br, @AuthenticationPrincipal UserDetails userDetails) throws IOException {
-        if (br.hasFieldErrors()) {
-            StringBuilder sb = new StringBuilder();
-            for (FieldError fe : br.getFieldErrors()) {
-                sb.append(fe.getField()).append(": ");
-                sb.append(fe.getDefaultMessage()).append("\n");
-            }
-            return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
-        }
+        postInputDto.setImage(image);
 
         postService.updatePost(id, postInputDto);
         return new ResponseEntity<>("Post successfully updated", HttpStatus.OK);
