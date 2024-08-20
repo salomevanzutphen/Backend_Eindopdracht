@@ -9,7 +9,7 @@ public class PostInputDto {
     private String title;
 
     @NotBlank
-    private String name;
+    private String subtitle;
 
     @NotBlank
     private String description;
@@ -32,12 +32,12 @@ public class PostInputDto {
         this.title = title;
     }
 
-    public String getName() {
-        return name;
+    public String getSubtitle() {
+        return subtitle;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSubtitle(String name) {
+        this.subtitle = name;
     }
 
     public String getDescription() {
@@ -55,6 +55,7 @@ public class PostInputDto {
     public void setImage(MultipartFile image) {
         this.image = image;
     }
+
 
 }
 

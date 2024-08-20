@@ -34,7 +34,7 @@ public class PostController {
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<Object> createPost(
             @RequestPart("title") String title,
-            @RequestPart("name") String name,
+            @RequestPart("subtitle") String subtitle,
             @RequestPart("description") String description,
             @RequestPart(value = "image", required = false) MultipartFile image,
             BindingResult br,
@@ -51,7 +51,7 @@ public class PostController {
 
         PostInputDto postInputDto = new PostInputDto();
         postInputDto.setTitle(title);
-        postInputDto.setName(name);
+        postInputDto.setSubtitle(subtitle);
         postInputDto.setDescription(description);
         postInputDto.setImage(image);
 
@@ -82,7 +82,7 @@ public class PostController {
     public ResponseEntity<String> updatePost(
             @PathVariable Long id,
             @RequestPart("title") String title,
-            @RequestPart("name") String name,
+            @RequestPart("subtitle") String subtitle,
             @RequestPart("description") String description,
             @RequestPart(value = "image", required = false) MultipartFile image,
             BindingResult br,
@@ -99,7 +99,7 @@ public class PostController {
 
         PostInputDto postInputDto = new PostInputDto();
         postInputDto.setTitle(title);
-        postInputDto.setName(name);
+        postInputDto.setSubtitle(subtitle);
         postInputDto.setDescription(description);
         postInputDto.setImage(image);
 

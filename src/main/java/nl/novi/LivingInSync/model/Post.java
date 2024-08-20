@@ -13,10 +13,10 @@ public class Post {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "subtitle", nullable = false)
+    private String subtitle;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
 
@@ -49,12 +49,12 @@ public class Post {
         this.title = title;
     }
 
-    public String getName() {
-        return name;
+    public String getSubtitle() {
+        return subtitle;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSubtitle(String name) {
+        this.subtitle = name;
     }
 
     public String getDescription() {
@@ -81,8 +81,6 @@ public class Post {
     public ImageData getImageData(){
         return imageData;
     }
-
-
 
 
 }

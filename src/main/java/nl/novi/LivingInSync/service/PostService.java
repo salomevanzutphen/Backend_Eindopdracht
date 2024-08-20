@@ -1,5 +1,6 @@
 package nl.novi.LivingInSync.service;
 
+import jakarta.transaction.Transactional;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
 import nl.novi.LivingInSync.exception.ResourceNotFoundException;
@@ -76,26 +77,36 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void updatePost(Long id, PostInputDto postInputDto) throws IOException {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
+        // Update post details
         post.setTitle(postInputDto.getTitle());
-        post.setName(postInputDto.getName());
+        post.setSubtitle(postInputDto.getSubtitle());
         post.setDescription(postInputDto.getDescription());
 
-        if (postInputDto.getImage() != null){
-            ImageData image = post.getImageData();
-            imageDataRepository.delete(image);
+        // Handle image update
+        if (postInputDto.getImage() != null) {
+            ImageData existingImage = post.getImageData();
 
-            ImageData imgData = new ImageData();
-            imgData.setName(postInputDto.getImage().getOriginalFilename());
-            imgData.setType(postInputDto.getImage().getContentType());
-            imgData.setImageData(ImageUtil.compressImage(postInputDto.getImage().getBytes()));
-            imgData.setPost(post);
+            // Update existing image data or create a new one if it doesn't exist
+            if (existingImage == null) {
+                existingImage = new ImageData();
+                existingImage.setPost(post);
+            }
 
-            ImageData savedImage = imageDataRepository.save(imgData);
-            post.setImage(savedImage);
+            existingImage.setName(postInputDto.getImage().getOriginalFilename());
+            existingImage.setType(postInputDto.getImage().getContentType());
+            existingImage.setImageData(ImageUtil.compressImage(postInputDto.getImage().getBytes()));
+
+            // Save the updated image data
+            imageDataRepository.save(existingImage);
+            post.setImage(existingImage);
         }
+
+        // Save the updated post
         postRepository.save(post);
     }
 
@@ -118,7 +129,7 @@ public class PostService {
     private Post mapToEntity(PostInputDto postInputDto) {
         Post post = new Post();
         post.setTitle(postInputDto.getTitle());
-        post.setName(postInputDto.getName());
+        post.setSubtitle(postInputDto.getSubtitle());
         post.setDescription(postInputDto.getDescription());
         return post;
     }
@@ -127,7 +138,7 @@ public class PostService {
         PostOutputDto postOutputDto = new PostOutputDto();
         postOutputDto.setId(post.getId());
         postOutputDto.setTitle(post.getTitle());
-        postOutputDto.setName(post.getName());
+        postOutputDto.setSubtitle(post.getSubtitle());
         postOutputDto.setDescription(post.getDescription());
         if (post.getImageData() != null){
             postOutputDto.setImgdata( ImageUtil.decompressImage(post.getImageData().getImageData()));

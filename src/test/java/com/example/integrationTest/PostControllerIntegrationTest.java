@@ -58,7 +58,7 @@ class PostControllerIntegrationTest {
         MockMultipartFile titlePart = new MockMultipartFile(
                 "title", "", "text/plain", "Hallo banaan".getBytes());
 
-        MockMultipartFile namePart = new MockMultipartFile(
+        MockMultipartFile subtitlePart = new MockMultipartFile(
                 "name", "", "text/plain", "Test Name".getBytes());
 
         MockMultipartFile descriptionPart = new MockMultipartFile(
@@ -67,7 +67,7 @@ class PostControllerIntegrationTest {
         this.mockMvc.perform(MockMvcRequestBuilders.multipart("/posts")
                         .file(imageFile)
                         .file(titlePart)
-                        .file(namePart)
+                        .file(subtitlePart)
                         .file(descriptionPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(MockMvcResultHandlers.print())

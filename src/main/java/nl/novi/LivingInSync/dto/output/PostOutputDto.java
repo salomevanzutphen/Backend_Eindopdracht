@@ -4,7 +4,7 @@ public class PostOutputDto {
 
     private Long id;
     private String title;
-    private String name;
+    private String subtitle;
     private String description;
 
     private byte[] imgdata;
@@ -31,12 +31,12 @@ public class PostOutputDto {
         this.title = title;
     }
 
-    public String getName() {
-        return name;
+    public String getSubtitle() {
+        return subtitle;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSubtitle(String name) {
+        this.subtitle = name;
     }
 
     public String getDescription() {

@@ -55,7 +55,7 @@ public class PostServiceTest {
     void setUp() {
         postInputDto = new PostInputDto();
         postInputDto.setTitle("Test Title");
-        postInputDto.setName("Test Name");
+        postInputDto.setSubtitle("Test Name");
         postInputDto.setDescription("Test Description");
         postInputDto.setImage(image);
 
