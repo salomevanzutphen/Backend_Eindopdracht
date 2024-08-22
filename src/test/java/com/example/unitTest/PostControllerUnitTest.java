@@ -56,7 +56,7 @@ class PostControllerUnitTest {
         PostOutputDto postOutputDto = new PostOutputDto();
         postOutputDto.setId(1L);
         postOutputDto.setTitle("Test Title");
-        postOutputDto.setSubtitle("Test Name");
+        postOutputDto.setSubtitle("Test Subtitle");
         postOutputDto.setDescription("Test Description");
         postOutputDto.setImgdata(imageBytes);
 
@@ -68,7 +68,7 @@ class PostControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", is(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title", is("Test Title")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", is("Test Subtitle")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.subtitle", is("Test Subtitle")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description", is("Test Description")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.imgdata", is(imageBase64)));
     }
