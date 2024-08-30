@@ -4,8 +4,6 @@ import nl.novi.LivingInSync.exception.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.access.prepost.PreAuthorize;
-import jakarta.validation.Valid;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
 import nl.novi.LivingInSync.service.PostService;
@@ -55,7 +53,6 @@ public class PostController {
         postInputDto.setDescription(description);
         postInputDto.setImage(image);
 
-        // Pass both postInputDto and userDetails to the service
         Long id = postService.createPost(postInputDto, userDetails);
 
         URI uri = URI.create(ServletUriComponentsBuilder

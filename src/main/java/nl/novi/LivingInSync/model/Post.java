@@ -1,6 +1,7 @@
 package nl.novi.LivingInSync.model;
 
 import jakarta.persistence.*;
+import nl.novi.LivingInSync.utils.ImageUtil;
 
 @Entity
 @Table(name = "posts")
@@ -19,14 +20,19 @@ public class Post {
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
-
     @ManyToOne
     @JoinColumn(name = "admin_id", referencedColumnName = "username", nullable = false)
     private User admin;
 
-    //Link naar de image data
-    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ImageData imageData;
+    @Column(name = "image_name")
+    private String imageName;
+
+    @Column(name = "image_type")
+    private String imageType;
+
+    @Lob
+    @Column(name = "image_data")
+    private byte[] imageData;
 
     // Getters and setters
 
@@ -65,7 +71,6 @@ public class Post {
         this.description = description;
     }
 
-
     public User getAdmin() {
         return admin;
     }
@@ -74,13 +79,27 @@ public class Post {
         this.admin = admin;
     }
 
-    public void setImage(ImageData imgData){
-        this.imageData = imgData;
+    public String getImageName() {
+        return imageName;
     }
 
-    public ImageData getImageData(){
-        return imageData;
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 
+    public String getImageType() {
+        return imageType;
+    }
 
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
+
+    public byte[] getImageData() {
+        return ImageUtil.decompressImage(imageData);
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = ImageUtil.compressImage(imageData);
+    }
 }
