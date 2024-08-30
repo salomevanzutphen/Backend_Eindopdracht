@@ -1,7 +1,6 @@
 package nl.novi.LivingInSync.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,12 +33,14 @@ public class User {
             fetch = FetchType.EAGER)
     private Set<Authority> authorities = new HashSet<>();
 
+    private static final int MIN_PASSWORD_LENGTH = 8;
+
     public User() {
     }
 
     public User(String username, String password, String name, String email, LocalDate birthday) {
         this.username = username;
-        this.password = password;
+        setPassword(password);
         this.name = name;
         this.email = email;
         this.birthday = birthday;
@@ -59,6 +60,18 @@ public class User {
     }
 
     public void setPassword(String password) {
+        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException("Password must be at least " + MIN_PASSWORD_LENGTH + " characters long.");
+        }
+
+        if (!password.matches(".*[a-z].*")) {
+            throw new IllegalArgumentException("Password must contain at least one lowercase letter.");
+        }
+
+        if (!password.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("Password must contain at least one uppercase letter.");
+        }
+
         this.password = password;
     }
 

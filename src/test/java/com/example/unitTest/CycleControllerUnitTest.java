@@ -67,7 +67,7 @@ class CycleControllerUnitTest {
             """;
 
         mockMvc.perform(post("/cycles")
-                        .with(csrf())  // Include CSRF token
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -89,7 +89,7 @@ class CycleControllerUnitTest {
             """;
 
         mockMvc.perform(put("/cycles")
-                        .with(csrf())  // Add this line to include the CSRF token
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isOk())

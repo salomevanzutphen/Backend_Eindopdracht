@@ -70,7 +70,6 @@ public class PostServiceTest {
         post.setDescription("Test Description");
         post.setAdmin(user);
 
-        // Use lenient stubbing to avoid UnnecessaryStubbingException
         lenient().when(userDetails.getUsername()).thenReturn("testUser");
     }
 
@@ -83,7 +82,7 @@ public class PostServiceTest {
         Long postId = postService.createPost(postInputDto, userDetails);
 
         assertEquals(1L, postId);
-        verify(postRepository, times(2)).save(any(Post.class)); // Expecting two saves: one before image, one after
+        verify(postRepository, times(2)).save(any(Post.class));
     }
 
     @Test
@@ -105,7 +104,7 @@ public class PostServiceTest {
 
         assertEquals(1L, postId);
         verify(imageDataRepository, times(1)).save(any(ImageData.class));
-        verify(postRepository, times(2)).save(any(Post.class)); // Expecting two saves: one before image, one after
+        verify(postRepository, times(2)).save(any(Post.class));
     }
 
     @Test

@@ -34,16 +34,15 @@ class PostControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Ensure the user exists in the database
+
         if (userRepository.findByUsername("admin").isEmpty()) {
             User testUser = new User();
             testUser.setUsername("admin");
-            testUser.setPassword("password"); // In production, make sure to hash the password
+            testUser.setPassword("password");
             testUser.setName("Salomé");
             testUser.setEmail("livinginsync@example.com");
             testUser.setBirthday(LocalDate.of(1990, 1, 1));
 
-            // Save the user to the database
             userRepository.save(testUser);
         }
     }
@@ -58,8 +57,9 @@ class PostControllerIntegrationTest {
         MockMultipartFile titlePart = new MockMultipartFile(
                 "title", "", "text/plain", "Hallo banaan".getBytes());
 
+        // Corrected part name from "name" to "subtitle"
         MockMultipartFile subtitlePart = new MockMultipartFile(
-                "name", "", "text/plain", "Test Name".getBytes());
+                "subtitle", "", "text/plain", "Test Subtitle".getBytes());
 
         MockMultipartFile descriptionPart = new MockMultipartFile(
                 "description", "", "text/plain", "This is a description of the test post.".getBytes());

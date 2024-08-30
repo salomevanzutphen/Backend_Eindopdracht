@@ -7,6 +7,7 @@ import nl.novi.LivingInSync.security.CustomUserDetailsService;
 import nl.novi.LivingInSync.security.JwtService;
 import nl.novi.LivingInSync.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,39 +43,32 @@ public class AuthController {
     }
 
     @PostMapping(value = "/authenticate")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authenticationRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthRequest authenticationRequest) {
 
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
 
         try {
+            // Authenticate the user using the username and password
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
         } catch (BadCredentialsException ex) {
-            throw new Exception("Incorrect username or password", ex);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password");
         }
 
+        // Load user details after successful authentication
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
         final String jwt = jwtService.generateToken(userDetails);
 
-        // Retrieve User object
+        // Retrieve full user details from the UserService
         User user = userService.findUserByUsername(username);
 
-        // Log user data for debugging
-        System.out.println("User Retrieved: " + user);
-        System.out.println("Username: " + user.getUsername());
-        System.out.println("Email: " + user.getEmail());
-        System.out.println("Name: " + user.getName());
-        System.out.println("Authorities: " + user.getAuthorities());
-
-        // Collect all authorities (roles) the user has
+        // Create an AuthResponse containing JWT and user details
         List<String> roles = user.getAuthorities().stream()
                 .map(authority -> authority.getAuthority())
                 .collect(Collectors.toList());
 
-        // Create an authentication response with additional user info
         AuthResponse authResponse = new AuthResponse(
                 jwt,
                 user.getUsername(),
@@ -85,4 +79,5 @@ public class AuthController {
 
         return ResponseEntity.ok(authResponse);
     }
+
 }

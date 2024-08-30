@@ -30,7 +30,7 @@ public class UserController {
             String newUsername = userService.createUser(userDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body("Welcome " + userDTO.getName() + "!");
         } catch (IllegalArgumentException e) {
-            logger.severe("Error creating user: " + e.getMessage());
+            logger.warning("Error creating user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Unexpected error creating user: " + e.getMessage());
@@ -47,6 +47,9 @@ public class UserController {
         } catch (UsernameNotFoundException e) {
             logger.warning("User not found: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (IllegalArgumentException e) {
+            logger.warning("Error updating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error updating user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating user details");
@@ -82,19 +85,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-    @GetMapping("/me")
-    public ResponseEntity<UserDto> getAuthenticatedUser(Authentication authentication) {
-        try {
-            String username = authentication.getName();
-            UserDto userDTO = userService.getUser(username);
-            return ResponseEntity.ok(userDTO);
-        } catch (UsernameNotFoundException e) {
-            logger.warning("User not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            logger.severe("Error retrieving user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
 }
+

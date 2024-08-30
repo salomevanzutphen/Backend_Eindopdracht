@@ -48,15 +48,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF protection
-                .httpBasic(basic -> basic.disable())  // Disable HTTP Basic authentication
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(basic -> basic.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         // User endpoints
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("USER", "ADMIN")
                         // Cycle endpoints
                         .requestMatchers(HttpMethod.POST, "/cycles").hasRole("USER")
                         .requestMatchers(HttpMethod.PUT, "/cycles/**").hasRole("USER")
@@ -66,6 +66,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/posts/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/posts/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
+                        //image endpoints
+                        .requestMatchers(HttpMethod.POST, "/image").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/image/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/image/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/image/**").permitAll()
+
                         // Auth endpoints
                         .requestMatchers("/authenticate").permitAll()
                         .requestMatchers("/authenticated").authenticated()
@@ -74,7 +80,6 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // Add a filter to validate the tokens with every request
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -85,7 +90,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // Replace with your frontend URL
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         source.registerCorsConfiguration("/**", config);

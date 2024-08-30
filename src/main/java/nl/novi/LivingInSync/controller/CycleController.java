@@ -38,7 +38,7 @@ public class CycleController {
         CycleOutputDto cycleOutputDto = cycleService.createOrUpdateCycle(cycleInputDto, userDetails);
 
         URI uri = URI.create(ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/mycycle").toUriString());
+                .fromCurrentRequest().toUriString());
 
         return ResponseEntity.created(uri).body(cycleOutputDto);
     }
@@ -58,9 +58,10 @@ public class CycleController {
         return ResponseEntity.ok(cycleOutputDto);
     }
 
-    @GetMapping("/mycycle")
+    @GetMapping
     public ResponseEntity<CycleOutputDto> getCycle(@AuthenticationPrincipal UserDetails userDetails) {
         CycleOutputDto cycleOutputDto = cycleService.getUserCycle(userDetails);
         return ResponseEntity.ok(cycleOutputDto);
     }
 }
+

@@ -65,7 +65,7 @@ public class CycleServiceTest {
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.empty());
         when(cycleRepository.save(any(Cycle.class))).thenAnswer(invocation -> {
             Cycle savedCycle = invocation.getArgument(0);
-            savedCycle.setId(1L); // Simulate ID assignment on save
+            savedCycle.setId(1L);
             return savedCycle;
         });
 
@@ -82,24 +82,22 @@ public class CycleServiceTest {
         LocalDate originalStartDate = LocalDate.of(2023, 1, 1);
         LocalDate updatedStartDate = LocalDate.of(2023, 2, 1);
 
-        // Set the original start date in the existing cycle
         cycle.setStartDate(originalStartDate);
 
-        // Set the updated start date in the input DTO
         cycleInputDto.setStartDate(updatedStartDate);
 
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.of(cycle));
         when(cycleRepository.save(any(Cycle.class))).thenAnswer(invocation -> {
             Cycle savedCycle = invocation.getArgument(0);
-            savedCycle.setId(1L); // Simulate ID assignment on save
+            savedCycle.setId(1L);
             return savedCycle;
         });
 
         CycleOutputDto result = cycleService.createOrUpdateCycle(cycleInputDto, userDetails);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());  // Assuming ID is 1
+        assertEquals(1L, result.getId());
         assertEquals(updatedStartDate, result.getPhases().get(0).getStartDate());
         verify(cycleRepository, times(1)).save(any(Cycle.class));
     }

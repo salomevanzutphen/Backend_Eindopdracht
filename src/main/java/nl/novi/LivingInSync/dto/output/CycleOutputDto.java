@@ -13,9 +13,6 @@ public class CycleOutputDto {
         this.phases = phases;
     }
 
-    public CycleOutputDto(List<PhaseDto> phases) {
-    }
-
     public CycleOutputDto() {
 
     }

@@ -27,8 +27,12 @@ public class UserService {
     }
 
     public String createUser(UserDto userDTO) {
+        if (userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+
         if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Email already exists.");
         }
 
         User newUser = toUser(userDTO);
@@ -39,20 +43,27 @@ public class UserService {
 
     public void updateUser(String username, UserDto userDTO) {
         User currentUser = findUserByUsername(username);
-        updateUserDetails(currentUser, userDTO);
 
+        if (!currentUser.getEmail().equals(userDTO.getEmail()) && userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new IllegalArgumentException("Email already exists.");
+        }
+
+        updateUserDetails(currentUser, userDTO);
         userRepository.save(currentUser);
     }
+
 
     public void deleteUser(String username) {
         User currentUser = findUserByUsername(username);
         userRepository.delete(currentUser);
     }
 
+
     public UserDto getUser(String username) {
         User currentUser = findUserByUsername(username);
         return toUserDTO(currentUser);
     }
+
 
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -62,12 +73,15 @@ public class UserService {
     private User toUser(UserDto userDTO) {
         User user = new User();
         user.setUsername(userDTO.getUsername());
+
+        user.setPassword(userDTO.getPassword());
+
         user.setPassword(passwordEncoder().encode(userDTO.getPassword()));
+
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setBirthday(userDTO.getBirthday());
 
-        // Default role of everyone who registers is user
         Set<Authority> authorities = new HashSet<>();
         authorities.add(new Authority(userDTO.getUsername(), "ROLE_USER"));
         user.setAuthorities(authorities);
@@ -91,7 +105,10 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setBirthday(userDTO.getBirthday());
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            user.setPassword(userDTO.getPassword());
             user.setPassword(passwordEncoder().encode(userDTO.getPassword()));
         }
     }
+
+
 }
