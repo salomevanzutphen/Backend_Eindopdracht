@@ -4,8 +4,8 @@ import jakarta.transaction.Transactional;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
 import nl.novi.LivingInSync.exception.ResourceNotFoundException;
-import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.model.User;
+import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.repository.PostRepository;
 import nl.novi.LivingInSync.repository.UserRepository;
 import nl.novi.LivingInSync.utils.ImageUtil;
@@ -118,7 +118,8 @@ public class PostService {
         postOutputDto.setSubtitle(post.getSubtitle());
         postOutputDto.setDescription(post.getDescription());
 
-        if (post.getImageData() != null) {
+        // Check if imageData is not null before decompressing
+        if (post.getImageData() != null && post.getImageData().length > 0) {
             postOutputDto.setImgdata(ImageUtil.decompressImage(post.getImageData()));
         }
 

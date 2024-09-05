@@ -71,7 +71,7 @@ class CycleControllerUnitTest {
                         .contentType(APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/mycycle")))
+                .andExpect(header().string("Location", containsString("/cycles"))) // Updated to match "/cycles"
                 .andExpect(jsonPath("$.id", is(1)));
     }
 
@@ -104,7 +104,7 @@ class CycleControllerUnitTest {
 
         when(cycleService.getUserCycle(any())).thenReturn(cycleOutputDto);
 
-        mockMvc.perform(get("/cycles/mycycle"))
+        mockMvc.perform(get("/cycles")) // Updated to match the correct URL mapping
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.phases").exists());

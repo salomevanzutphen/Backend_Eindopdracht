@@ -34,7 +34,7 @@ class PostControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-
+        // Ensure test user exists
         if (userRepository.findByUsername("admin").isEmpty()) {
             User testUser = new User();
             testUser.setUsername("admin");
@@ -50,20 +50,20 @@ class PostControllerIntegrationTest {
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void shouldCreateCorrectPost() throws Exception {
-
+        // Mock files for multipart request
         MockMultipartFile imageFile = new MockMultipartFile(
                 "image", "test-image.jpg", "image/jpeg", "Test Image Content".getBytes());
 
         MockMultipartFile titlePart = new MockMultipartFile(
                 "title", "", "text/plain", "Hallo banaan".getBytes());
 
-        // Corrected part name from "name" to "subtitle"
         MockMultipartFile subtitlePart = new MockMultipartFile(
                 "subtitle", "", "text/plain", "Test Subtitle".getBytes());
 
         MockMultipartFile descriptionPart = new MockMultipartFile(
                 "description", "", "text/plain", "This is a description of the test post.".getBytes());
 
+        // Perform the request and validate response
         this.mockMvc.perform(MockMvcRequestBuilders.multipart("/posts")
                         .file(imageFile)
                         .file(titlePart)
@@ -72,10 +72,7 @@ class PostControllerIntegrationTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().exists("Location"))
-                .andExpect(MockMvcResultMatchers.content().string("1")); // Expecting the ID as a plain string
+                .andExpect(MockMvcResultMatchers.header().string("Location", "http://localhost/posts/1")) // Expect full URL
+                .andExpect(MockMvcResultMatchers.content().string("1")); // Expect the ID as a plain string
     }
-
-
-
 }

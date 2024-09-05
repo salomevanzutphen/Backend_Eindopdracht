@@ -1,7 +1,6 @@
 package com.example.integrationTest;
 
 import nl.novi.LivingInSync.LivingInSyncApplication;
-import nl.novi.LivingInSync.service.CycleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,7 +14,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-
 @SpringBootTest(classes = LivingInSyncApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -24,13 +22,9 @@ class CycleControllerIntegrationTest {
     @Autowired
     MockMvc mockMvc;
 
-    @Autowired
-    CycleService cycleService;
-
     @Test
     @WithMockUser(username = "test", roles = {"USER"})
     void shouldCreateCorrectCycle() throws Exception {
-
         String requestJson = """
                 {
                     "startDate" : "2024-08-16"
@@ -42,7 +36,9 @@ class CycleControllerIntegrationTest {
                         .contentType(APPLICATION_JSON)
                         .content(requestJson))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isCreated());
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.header().exists("Location"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.phases").exists());
     }
 }
-

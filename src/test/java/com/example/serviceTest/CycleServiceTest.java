@@ -43,6 +43,7 @@ public class CycleServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Arrange
         user = new User();
         user.setUsername("testUser");
 
@@ -58,6 +59,7 @@ public class CycleServiceTest {
 
     @Test
     void testCreateOrUpdateCycle_NewCycle() {
+        // Arrange
         LocalDate expectedStartDate = LocalDate.of(2023, 1, 1);
         cycleInputDto.setStartDate(expectedStartDate);
 
@@ -69,8 +71,10 @@ public class CycleServiceTest {
             return savedCycle;
         });
 
+        // Act
         CycleOutputDto result = cycleService.createOrUpdateCycle(cycleInputDto, userDetails);
 
+        // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals(expectedStartDate, result.getPhases().get(0).getStartDate());
@@ -79,11 +83,11 @@ public class CycleServiceTest {
 
     @Test
     void testCreateOrUpdateCycle_UpdateExistingCycle() {
+        // Arrange
         LocalDate originalStartDate = LocalDate.of(2023, 1, 1);
         LocalDate updatedStartDate = LocalDate.of(2023, 2, 1);
 
         cycle.setStartDate(originalStartDate);
-
         cycleInputDto.setStartDate(updatedStartDate);
 
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
@@ -94,8 +98,10 @@ public class CycleServiceTest {
             return savedCycle;
         });
 
+        // Act
         CycleOutputDto result = cycleService.createOrUpdateCycle(cycleInputDto, userDetails);
 
+        // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals(updatedStartDate, result.getPhases().get(0).getStartDate());
@@ -104,45 +110,57 @@ public class CycleServiceTest {
 
     @Test
     void testCreateOrUpdateCycle_UserNotFound() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.createOrUpdateCycle(cycleInputDto, userDetails));
     }
 
     @Test
     void testGetUserCycle_Success() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.of(cycle));
 
+        // Act
         CycleOutputDto result = cycleService.getUserCycle(userDetails);
 
+        // Assert
         assertNotNull(result);
         assertEquals(cycle.getId(), result.getId());
     }
 
     @Test
     void testGetUserCycle_UserNotFound() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.getUserCycle(userDetails));
     }
 
     @Test
     void testGetUserCycle_CycleNotFound() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.getUserCycle(userDetails));
     }
 
     @Test
     void testUpdateCycleForUser_Success() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.of(cycle));
         when(cycleRepository.save(any(Cycle.class))).thenReturn(cycle);
 
+        // Act
         CycleOutputDto result = cycleService.updateCycleForUser(cycleInputDto, userDetails);
 
+        // Assert
         assertNotNull(result);
         assertEquals(cycle.getId(), result.getId());
         verify(cycleRepository, times(1)).save(any(Cycle.class));
@@ -150,16 +168,20 @@ public class CycleServiceTest {
 
     @Test
     void testUpdateCycleForUser_UserNotFound() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.updateCycleForUser(cycleInputDto, userDetails));
     }
 
     @Test
     void testUpdateCycleForUser_CycleNotFound() {
+        // Arrange
         when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
         when(cycleRepository.findByCycleUser(any(User.class))).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.updateCycleForUser(cycleInputDto, userDetails));
     }
 }

@@ -3,10 +3,8 @@ package com.example.serviceTest;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
 import nl.novi.LivingInSync.exception.ResourceNotFoundException;
-import nl.novi.LivingInSync.model.ImageData;
-import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.model.User;
-import nl.novi.LivingInSync.repository.ImageDataRepository;
+import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.repository.PostRepository;
 import nl.novi.LivingInSync.repository.UserRepository;
 import nl.novi.LivingInSync.service.PostService;
@@ -36,9 +34,6 @@ public class PostServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private ImageDataRepository imageDataRepository;
-
     @InjectMocks
     private PostService postService;
 
@@ -54,6 +49,7 @@ public class PostServiceTest {
 
     @BeforeEach
     void setUp() {
+        // Arrange
         postInputDto = new PostInputDto();
         postInputDto.setTitle("Test Title");
         postInputDto.setSubtitle("Test Subtitle");
@@ -75,69 +71,87 @@ public class PostServiceTest {
 
     @Test
     void testCreatePost_Success() throws IOException {
+        // Arrange
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(image.getBytes()).thenReturn("image-data".getBytes());
 
+        // Act
         Long postId = postService.createPost(postInputDto, userDetails);
 
+        // Assert
         assertEquals(1L, postId);
         verify(postRepository, times(2)).save(any(Post.class));
     }
 
     @Test
     void testCreatePost_UserNotFound() {
+        // Arrange
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> postService.createPost(postInputDto, userDetails));
     }
 
     @Test
     void testCreatePost_WithImage() throws IOException {
+        // Arrange
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(image.getOriginalFilename()).thenReturn("testImage.jpg");
         when(image.getContentType()).thenReturn("image/jpeg");
         when(image.getBytes()).thenReturn("image-data".getBytes());
 
+        // Act
         Long postId = postService.createPost(postInputDto, userDetails);
 
+        // Assert
         assertEquals(1L, postId);
-        verify(imageDataRepository, times(1)).save(any(ImageData.class));
         verify(postRepository, times(2)).save(any(Post.class));
     }
 
     @Test
     void testGetPost_Success() {
+        // Arrange
+        byte[] compressedData = ImageUtil.compressImage("image-data".getBytes());
+        post.setImageData(compressedData);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
+        // Act
         PostOutputDto result = postService.getPost(1L);
 
+        // Assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Test Title", result.getTitle());
         assertEquals("Test Subtitle", result.getSubtitle());
         assertEquals("Test Description", result.getDescription());
+        assertNotNull(result.getImgdata());
     }
 
     @Test
     void testGetPost_PostNotFound() {
+        // Arrange
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> postService.getPost(1L));
     }
 
     @Test
     void testDeletePost_Success() {
+        // Arrange
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
 
+        // Act & Assert
         assertDoesNotThrow(() -> postService.deletePost(1L, userDetails));
         verify(postRepository, times(1)).delete(post);
     }
 
     @Test
     void testDeletePost_UserNotAuthorized() {
+        // Arrange
         User anotherUser = new User();
         anotherUser.setUsername("anotherUser");
         post.setAdmin(anotherUser);
@@ -145,14 +159,17 @@ public class PostServiceTest {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
 
+        // Act & Assert
         assertThrows(SecurityException.class, () -> postService.deletePost(1L, userDetails));
         verify(postRepository, never()).delete(any(Post.class));
     }
 
     @Test
     void testDeletePost_PostNotFound() {
+        // Arrange
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> postService.deletePost(1L, userDetails));
         verify(postRepository, never()).delete(any(Post.class));
     }

@@ -1,8 +1,8 @@
 package nl.novi.LivingInSync.service;
 
 import nl.novi.LivingInSync.dto.UserDto;
-import nl.novi.LivingInSync.model.Authority;
 import nl.novi.LivingInSync.model.User;
+import nl.novi.LivingInSync.model.Authority;
 import nl.novi.LivingInSync.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
