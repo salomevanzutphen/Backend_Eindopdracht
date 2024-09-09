@@ -51,7 +51,7 @@ public class PostController {
         postInputDto.setTitle(title);
         postInputDto.setSubtitle(subtitle);
         postInputDto.setDescription(description);
-        postInputDto.setImage(image);
+        postInputDto.setImage(image); // Make sure image is set correctly
 
         Long id = postService.createPost(postInputDto, userDetails);
 

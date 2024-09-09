@@ -1,5 +1,6 @@
 package nl.novi.LivingInSync.utils;
 
+import nl.novi.LivingInSync.model.ImageData;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -53,7 +54,9 @@ public class ImageUtil {
         return outputStream.toByteArray();
 
             }
-        }
+
+
+}
 
 
 

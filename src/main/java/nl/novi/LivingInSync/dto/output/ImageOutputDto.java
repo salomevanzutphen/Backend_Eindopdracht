@@ -1,29 +1,14 @@
-package nl.novi.LivingInSync.model;
+package nl.novi.LivingInSync.dto.output;
 
-import jakarta.persistence.*;
+public class ImageOutputDto {
 
-@Entity
-@Table(name = "image_data")
-public class ImageData {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String type;
-
-    @Lob
     private byte[] imageData;
 
-    @OneToOne
-    @JoinColumn(name = "post_id", referencedColumnName = "id")
-    private Post post;
-
-    // Default constructor
-    public ImageData() {}
-
-    // Getters and Setters
+    public ImageOutputDto() {
+    }
 
     public Long getId() {
         return id;
@@ -55,13 +40,5 @@ public class ImageData {
 
     public void setImageData(byte[] imageData) {
         this.imageData = imageData;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
     }
 }

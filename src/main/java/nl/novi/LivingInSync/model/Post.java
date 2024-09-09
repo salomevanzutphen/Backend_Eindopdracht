@@ -1,43 +1,31 @@
 package nl.novi.LivingInSync.model;
 
 import jakarta.persistence.*;
-import nl.novi.LivingInSync.utils.ImageUtil;
 
 @Entity
-@Table(name = "posts")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false)
+    @Column(nullable = false)
     private String title;
 
-    @Column(name = "subtitle", nullable = false)
+    @Column(nullable = false)
     private String subtitle;
 
-    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ImageData imageData;
+
     @ManyToOne
-    @JoinColumn(name = "admin_id", referencedColumnName = "username", nullable = false)
+    @JoinColumn(name = "admin_id")
     private User admin;
 
-    @Column(name = "image_name")
-    private String imageName;
-
-    @Column(name = "image_type")
-    private String imageType;
-
-    @Lob
-    @Column(name = "image_data")
-    private byte[] imageData;
-
-    // Getters and setters
-
-    public Post() {
-    }
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -59,8 +47,8 @@ public class Post {
         return subtitle;
     }
 
-    public void setSubtitle(String name) {
-        this.subtitle = name;
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
     }
 
     public String getDescription() {
@@ -79,27 +67,14 @@ public class Post {
         this.admin = admin;
     }
 
-    public String getImageName() {
-        return imageName;
+    public ImageData getImageData() {
+        return imageData;
     }
 
-    public void setImageName(String imageName) {
-        this.imageName = imageName;
-    }
-
-    public String getImageType() {
-        return imageType;
-    }
-
-    public void setImageType(String imageType) {
-        this.imageType = imageType;
-    }
-
-    public byte[] getImageData() {
-        return ImageUtil.decompressImage(imageData);
-    }
-
-    public void setImageData(byte[] imageData) {
-        this.imageData = ImageUtil.compressImage(imageData);
+    public void setImageData(ImageData imageData) {
+        this.imageData = imageData;
+        if (imageData != null) {
+            imageData.setPost(this); // Ensure bidirectional relationship consistency
+        }
     }
 }

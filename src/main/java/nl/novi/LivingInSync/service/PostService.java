@@ -1,11 +1,12 @@
 package nl.novi.LivingInSync.service;
 
-import jakarta.transaction.Transactional;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
 import nl.novi.LivingInSync.exception.ResourceNotFoundException;
-import nl.novi.LivingInSync.model.User;
+import nl.novi.LivingInSync.model.ImageData;
 import nl.novi.LivingInSync.model.Post;
+import nl.novi.LivingInSync.model.User;
+import nl.novi.LivingInSync.repository.ImageDataRepository;
 import nl.novi.LivingInSync.repository.PostRepository;
 import nl.novi.LivingInSync.repository.UserRepository;
 import nl.novi.LivingInSync.utils.ImageUtil;
@@ -22,32 +23,49 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final ImageDataRepository imageDataRepository;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, ImageDataRepository imageDataRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.imageDataRepository = imageDataRepository; // Inject the ImageDataRepository
     }
 
-    public Long createPost(PostInputDto postInputDto, UserDetails userDetails) throws IOException {
+    public Long createPost(PostInputDto postInputDto, UserDetails userDetails) {
         Post post = mapToEntity(postInputDto);
 
-        // Find the admin user from the repository
+        // Retrieve the authenticated admin user
         User admin = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Set the admin user for the post
+        // Set the admin for the post
         post.setAdmin(admin);
 
-        // Save the post first to generate an ID for the post
+        // Save the post to generate an ID for it
         post = postRepository.save(post);
 
-        // Handle the image if it exists
-        if (postInputDto.getImage() != null && !postInputDto.getImage().isEmpty()) {
-            processImage(postInputDto.getImage(), post);
+        // If there is an image, save it and associate it with the post
+        if (postInputDto.getImage() != null) {
+            MultipartFile imageFile = postInputDto.getImage();
+            try {
+                ImageData imgData = new ImageData();
+                imgData.setName(imageFile.getOriginalFilename());
+                imgData.setType(imageFile.getContentType());
+                imgData.setImageData(ImageUtil.compressImage(imageFile.getBytes()));
+
+                // Set the image's post reference
+                imgData.setPost(post);
+
+                // Save the image and set it to the post
+                post.setImageData(imageDataRepository.save(imgData));
+            } catch (IOException e) {
+                throw new RuntimeException("Error while processing image", e);
+            }
         }
 
         return post.getId();
     }
+
 
     public PostOutputDto getPost(Long id) {
         Post post = postRepository.findById(id)
@@ -62,45 +80,53 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void updatePost(Long id, PostInputDto postInputDto) throws IOException {
+    public void updatePost(Long id, PostInputDto postInputDto) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
+        // Update post details
         post.setTitle(postInputDto.getTitle());
         post.setSubtitle(postInputDto.getSubtitle());
         post.setDescription(postInputDto.getDescription());
 
-        // Handle the image if it exists
+        // Check if a new image is provided
         if (postInputDto.getImage() != null && !postInputDto.getImage().isEmpty()) {
-            processImage(postInputDto.getImage(), post);
+            MultipartFile imageFile = postInputDto.getImage();
+            try {
+                ImageData imgData = post.getImageData();
+                if (imgData == null) {
+                    imgData = new ImageData(); // Create new ImageData if it doesn't exist
+                    imgData.setPost(post);
+                    post.setImageData(imgData);
+                }
+                imgData.setName(imageFile.getOriginalFilename());
+                imgData.setType(imageFile.getContentType());
+                imgData.setImageData(ImageUtil.compressImage(imageFile.getBytes()));
+
+                imageDataRepository.save(imgData); // Save the updated image data
+            } catch (IOException e) {
+                throw new RuntimeException("Error while processing image", e);
+            }
         }
 
-        postRepository.save(post);
+        postRepository.save(post); // Save the post after updating image
     }
+
 
     public void deletePost(Long id, UserDetails userDetails) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
+        // Retrieve the authenticated admin user
         User admin = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        // Check if the admin has permission to delete the post
         if (!post.getAdmin().equals(admin)) {
             throw new SecurityException("You are not authorized to delete this post");
         }
 
         postRepository.delete(post);
-    }
-
-    private void processImage(MultipartFile image, Post post) throws IOException {
-        // Extract the image details from MultipartFile
-        post.setImageName(image.getOriginalFilename());
-        post.setImageType(image.getContentType());
-        post.setImageData(ImageUtil.compressImage(image.getBytes()));
-
-        // Save the post with image details
-        postRepository.save(post);
     }
 
     private Post mapToEntity(PostInputDto postInputDto) {
@@ -118,9 +144,9 @@ public class PostService {
         postOutputDto.setSubtitle(post.getSubtitle());
         postOutputDto.setDescription(post.getDescription());
 
-        // Check if imageData is not null before decompressing
-        if (post.getImageData() != null && post.getImageData().length > 0) {
-            postOutputDto.setImgdata(ImageUtil.decompressImage(post.getImageData()));
+        // Set image data if it exists
+        if (post.getImageData() != null) {
+            postOutputDto.setImgdata(ImageUtil.decompressImage(post.getImageData().getImageData()));
         }
 
         return postOutputDto;
