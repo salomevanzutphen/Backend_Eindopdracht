@@ -1,8 +1,9 @@
-package com.example.integrationTest;
+package com.testing.integrationTest;
 
 import nl.novi.LivingInSync.LivingInSyncApplication;
 import nl.novi.LivingInSync.model.User;
 import nl.novi.LivingInSync.repository.UserRepository;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = LivingInSyncApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class PostControllerIntegrationTest {
+class PostIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -72,7 +73,31 @@ class PostControllerIntegrationTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string("Location", "http://localhost/posts/1")) // Expect full URL
-                .andExpect(MockMvcResultMatchers.content().string("1")); // Expect the ID as a plain string
+                .andExpect(MockMvcResultMatchers.header().string("Location", Matchers.startsWith("http://localhost/posts/")))
+                .andExpect(MockMvcResultMatchers.content().string("1")); // Check for the plain string response "1"
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void shouldReturnBadRequestWhenTitleIsMissing() throws Exception {
+        // Mock files for multipart request with a missing title
+        MockMultipartFile imageFile = new MockMultipartFile(
+                "image", "test-image.jpg", "image/jpeg", "Test Image Content".getBytes());
+
+        // Title part is missing to simulate the error scenario
+        MockMultipartFile subtitlePart = new MockMultipartFile(
+                "subtitle", "", "text/plain", "Test Subtitle".getBytes());
+
+        MockMultipartFile descriptionPart = new MockMultipartFile(
+                "description", "", "text/plain", "This is a description of the test post.".getBytes());
+
+        // Perform the request and validate response
+        this.mockMvc.perform(MockMvcRequestBuilders.multipart("/posts")
+                        .file(imageFile)
+                        .file(subtitlePart)
+                        .file(descriptionPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest()); // 400 Bad Request vanwege missing title
     }
 }

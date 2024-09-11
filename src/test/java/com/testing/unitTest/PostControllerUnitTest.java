@@ -1,4 +1,4 @@
-package com.example.unitTest;
+package com.testing.unitTest;
 
 import nl.novi.LivingInSync.LivingInSyncApplication;
 import nl.novi.LivingInSync.controller.PostController;
@@ -20,9 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.Base64;
 import java.util.Collections;
@@ -56,7 +54,7 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldCreatePostSuccessfully() throws Exception {
         MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", "test image content".getBytes());
         MockMultipartFile title = new MockMultipartFile("title", "", "text/plain", "Test Title".getBytes());
@@ -79,7 +77,7 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldRetrieveCorrectPost() throws Exception {
         byte[] imageBytes = "test image content".getBytes();
         String imageBase64 = Base64.getEncoder().encodeToString(imageBytes);
@@ -105,7 +103,7 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldRetrieveAllPosts() throws Exception {
         PostOutputDto postOutputDto = new PostOutputDto();
         postOutputDto.setId(1L);
@@ -154,7 +152,7 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldDeletePostSuccessfully() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/posts/1")
                         .with(csrf()))  // Add CSRF token
@@ -165,7 +163,7 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldReturnNotFoundWhenPostDoesNotExist() throws Exception {
         doThrow(new ResourceNotFoundException("Post not found")).when(postService).deletePost(eq(1L), any());
 
@@ -178,8 +176,9 @@ class PostControllerUnitTest {
     }
 
     @Test
-    @WithMockUser(username="testuser", roles="ADMIN")
+    @WithMockUser(username = "testuser", roles = "ADMIN")
     void shouldReturnForbiddenWhenUserIsNotAuthorizedToDelete() throws Exception {
+        // Mock service to throw SecurityException when unauthorized
         doThrow(new SecurityException("You are not authorized to delete this post")).when(postService).deletePost(eq(1L), any());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/posts/1")

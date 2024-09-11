@@ -29,50 +29,48 @@ public class CycleService {
     }
 
     public CycleOutputDto createOrUpdateCycle(CycleInputDto cycleInputDto, UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Optional<Cycle> existingCycleOpt = cycleRepository.findByCycleUser(user);
-        Cycle cycle;
-
-        if (existingCycleOpt.isPresent()) {
-            // Update existing cycle
-            cycle = existingCycleOpt.get();
-            cycle.setStartDate(cycleInputDto.getStartDate());
-        } else {
-            // Create a new cycle
-            cycle = mapToEntity(cycleInputDto);
-            cycle.setCycleUser(user);
-        }
-
-        cycle = cycleRepository.save(cycle);
-        List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        CycleOutputDto outputDto = mapToOutputDto(cycle, phases);
-        return outputDto;
+        User user = findUserByUsername(userDetails.getUsername());
+        Cycle cycle = cycleRepository.findByCycleUser(user).orElseGet(() -> createNewCycle(cycleInputDto, user));
+        updateCycleStartDate(cycle, cycleInputDto.getStartDate());
+        return saveAndMapToDto(cycle);
     }
 
     public CycleOutputDto getUserCycle(UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Cycle cycle = cycleRepository.findByCycleUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Cycle not found for the user"));
-
-        List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        return mapToOutputDto(cycle, phases);
+        User user = findUserByUsername(userDetails.getUsername());
+        Cycle cycle = findCycleByUser(user);
+        return mapToOutputDto(cycle, createPhases(cycle.getStartDate()));
     }
 
     public CycleOutputDto updateCycleForUser(CycleInputDto cycleInputDto, UserDetails userDetails) {
-        User user = userRepository.findByUsername(userDetails.getUsername())
+        User user = findUserByUsername(userDetails.getUsername());
+        Cycle cycle = findCycleByUser(user);
+        updateCycleStartDate(cycle, cycleInputDto.getStartDate());
+        return saveAndMapToDto(cycle);
+    }
+
+    private User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
 
-        Cycle cycle = cycleRepository.findByCycleUser(user)
+    private Cycle findCycleByUser(User user) {
+        return cycleRepository.findByCycleUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Cycle not found for the user"));
+    }
 
-        cycle.setStartDate(cycleInputDto.getStartDate());
+    private Cycle createNewCycle(CycleInputDto cycleInputDto, User user) {
+        Cycle cycle = mapToEntity(cycleInputDto);
+        cycle.setCycleUser(user);
+        return cycle;
+    }
+
+    private void updateCycleStartDate(Cycle cycle, LocalDate startDate) {
+        cycle.setStartDate(startDate);
+    }
+
+    private CycleOutputDto saveAndMapToDto(Cycle cycle) {
         cycle = cycleRepository.save(cycle);
-        List<PhaseDto> phases = createPhases(cycle.getStartDate());
-        return mapToOutputDto(cycle, phases);
+        return mapToOutputDto(cycle, createPhases(cycle.getStartDate()));
     }
 
     private Cycle mapToEntity(CycleInputDto cycleInputDto) {
@@ -93,35 +91,19 @@ public class CycleService {
         LocalDate currentStartDate = startDate;
 
         for (int i = 0; i < 13; i++) {
-            // Menstruation phase
-            Menstruation menstruation = new Menstruation(currentStartDate);
-            phases.add(menstruation);
-            currentStartDate = menstruation.getEndDate().plusDays(1);
+            phases.add(new Menstruation(currentStartDate));
+            currentStartDate = phases.get(phases.size() - 1).getEndDate().plusDays(1);
 
-            // Follicular phase
-            Follicular follicular = new Follicular(currentStartDate);
-            phases.add(follicular);
-            currentStartDate = follicular.getEndDate().plusDays(1);
+            phases.add(new Follicular(currentStartDate));
+            currentStartDate = phases.get(phases.size() - 1).getEndDate().plusDays(1);
 
-            // Ovulation phase
-            Ovulation ovulation = new Ovulation(currentStartDate);
-            phases.add(ovulation);
-            currentStartDate = ovulation.getEndDate().plusDays(1);
+            phases.add(new Ovulation(currentStartDate));
+            currentStartDate = phases.get(phases.size() - 1).getEndDate().plusDays(1);
 
-            // Luteal phase
-            Luteal luteal = new Luteal(currentStartDate);
-            phases.add(luteal);
-            currentStartDate = luteal.getEndDate().plusDays(1);
+            phases.add(new Luteal(currentStartDate));
+            currentStartDate = phases.get(phases.size() - 1).getEndDate().plusDays(1);
         }
 
         return phases;
-    }
-
-    private PhaseDto mapToPhaseDto(Phase phase) {
-        PhaseDto phaseDto = new PhaseDto();
-        phaseDto.setPhaseName(phase.getPhase());
-        phaseDto.setStartDate(phase.getStartDate());
-        phaseDto.setEndDate(phase.getEndDate());
-        return phaseDto;
     }
 }

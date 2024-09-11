@@ -1,4 +1,4 @@
-package com.example.unitTest;
+package com.testing.unitTest;
 
 import nl.novi.LivingInSync.LivingInSyncApplication;
 import nl.novi.LivingInSync.controller.CycleController;

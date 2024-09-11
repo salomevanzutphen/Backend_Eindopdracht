@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,32 +25,28 @@ public class CycleController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createOrUpdateCycle(@Valid @RequestBody CycleInputDto cycleInputDto, BindingResult br, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> createOrUpdateCycle(
+            @Valid @RequestBody CycleInputDto cycleInputDto,
+            BindingResult br,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
         if (br.hasFieldErrors()) {
-            StringBuilder sb = new StringBuilder();
-            for (FieldError fe : br.getFieldErrors()) {
-                sb.append(fe.getField()).append(": ");
-                sb.append(fe.getDefaultMessage()).append("\n");
-            }
-            return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
+            return handleValidationErrors(br);
         }
+
         CycleOutputDto cycleOutputDto = cycleService.createOrUpdateCycle(cycleInputDto, userDetails);
-
-        URI uri = URI.create(ServletUriComponentsBuilder
-                .fromCurrentRequest().toUriString());
-
+        URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentRequest().toUriString());
         return ResponseEntity.created(uri).body(cycleOutputDto);
     }
 
     @PutMapping
-    public ResponseEntity<Object> updateCycle(@Valid @RequestBody CycleInputDto cycleInputDto, BindingResult br, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> updateCycle(
+            @Valid @RequestBody CycleInputDto cycleInputDto,
+            BindingResult br,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
         if (br.hasFieldErrors()) {
-            StringBuilder sb = new StringBuilder();
-            for (FieldError fe : br.getFieldErrors()) {
-                sb.append(fe.getField()).append(": ");
-                sb.append(fe.getDefaultMessage()).append("\n");
-            }
-            return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
+            return handleValidationErrors(br);
         }
 
         CycleOutputDto cycleOutputDto = cycleService.updateCycleForUser(cycleInputDto, userDetails);
@@ -63,5 +58,10 @@ public class CycleController {
         CycleOutputDto cycleOutputDto = cycleService.getUserCycle(userDetails);
         return ResponseEntity.ok(cycleOutputDto);
     }
-}
 
+    private ResponseEntity<Object> handleValidationErrors(BindingResult br) {
+        StringBuilder sb = new StringBuilder();
+        br.getFieldErrors().forEach(fe -> sb.append(fe.getField()).append(": ").append(fe.getDefaultMessage()).append("\n"));
+        return new ResponseEntity<>(sb.toString(), HttpStatus.BAD_REQUEST);
+    }
+}

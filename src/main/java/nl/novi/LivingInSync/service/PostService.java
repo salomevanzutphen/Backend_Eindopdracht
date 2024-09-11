@@ -28,44 +28,22 @@ public class PostService {
     public PostService(PostRepository postRepository, UserRepository userRepository, ImageDataRepository imageDataRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
-        this.imageDataRepository = imageDataRepository; // Inject the ImageDataRepository
+        this.imageDataRepository = imageDataRepository;
     }
 
     public Long createPost(PostInputDto postInputDto, UserDetails userDetails) {
+        User admin = findAdminUser(userDetails);
         Post post = mapToEntity(postInputDto);
-
-        // Retrieve the authenticated admin user
-        User admin = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        // Set the admin for the post
         post.setAdmin(admin);
 
-        // Save the post to generate an ID for it
         post = postRepository.save(post);
 
-        // If there is an image, save it and associate it with the post
         if (postInputDto.getImage() != null) {
-            MultipartFile imageFile = postInputDto.getImage();
-            try {
-                ImageData imgData = new ImageData();
-                imgData.setName(imageFile.getOriginalFilename());
-                imgData.setType(imageFile.getContentType());
-                imgData.setImageData(ImageUtil.compressImage(imageFile.getBytes()));
-
-                // Set the image's post reference
-                imgData.setPost(post);
-
-                // Save the image and set it to the post
-                post.setImageData(imageDataRepository.save(imgData));
-            } catch (IOException e) {
-                throw new RuntimeException("Error while processing image", e);
-            }
+            saveImageForPost(postInputDto.getImage(), post);
         }
 
         return post.getId();
     }
-
 
     public PostOutputDto getPost(Long id) {
         Post post = postRepository.findById(id)
@@ -74,8 +52,7 @@ public class PostService {
     }
 
     public List<PostOutputDto> getAllPosts() {
-        List<Post> posts = postRepository.findAll();
-        return posts.stream()
+        return postRepository.findAll().stream()
                 .map(this::mapToOutputDto)
                 .collect(Collectors.toList());
     }
@@ -84,49 +61,53 @@ public class PostService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-        // Update post details
-        post.setTitle(postInputDto.getTitle());
-        post.setSubtitle(postInputDto.getSubtitle());
-        post.setDescription(postInputDto.getDescription());
+        updatePostDetails(post, postInputDto);
 
-        // Check if a new image is provided
         if (postInputDto.getImage() != null && !postInputDto.getImage().isEmpty()) {
-            MultipartFile imageFile = postInputDto.getImage();
-            try {
-                ImageData imgData = post.getImageData();
-                if (imgData == null) {
-                    imgData = new ImageData(); // Create new ImageData if it doesn't exist
-                    imgData.setPost(post);
-                    post.setImageData(imgData);
-                }
-                imgData.setName(imageFile.getOriginalFilename());
-                imgData.setType(imageFile.getContentType());
-                imgData.setImageData(ImageUtil.compressImage(imageFile.getBytes()));
-
-                imageDataRepository.save(imgData); // Save the updated image data
-            } catch (IOException e) {
-                throw new RuntimeException("Error while processing image", e);
-            }
+            saveImageForPost(postInputDto.getImage(), post);
         }
 
-        postRepository.save(post); // Save the post after updating image
+        postRepository.save(post);
     }
-
 
     public void deletePost(Long id, UserDetails userDetails) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-        // Retrieve the authenticated admin user
-        User admin = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User admin = findAdminUser(userDetails);
 
-        // Check if the admin has permission to delete the post
         if (!post.getAdmin().equals(admin)) {
             throw new SecurityException("You are not authorized to delete this post");
         }
 
         postRepository.delete(post);
+    }
+
+    // Helper method to find admin user
+    private User findAdminUser(UserDetails userDetails) {
+        return userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    // Helper method to save image for a post
+    private void saveImageForPost(MultipartFile imageFile, Post post) {
+        try {
+            ImageData imgData = new ImageData();
+            imgData.setName(imageFile.getOriginalFilename());
+            imgData.setType(imageFile.getContentType());
+            imgData.setImageData(ImageUtil.compressImage(imageFile.getBytes()));
+            imgData.setPost(post);
+            post.setImageData(imageDataRepository.save(imgData));
+        } catch (IOException e) {
+            throw new RuntimeException("Error while processing image", e);
+        }
+    }
+
+    // Helper method to update post details
+    private void updatePostDetails(Post post, PostInputDto postInputDto) {
+        post.setTitle(postInputDto.getTitle());
+        post.setSubtitle(postInputDto.getSubtitle());
+        post.setDescription(postInputDto.getDescription());
     }
 
     private Post mapToEntity(PostInputDto postInputDto) {
@@ -144,7 +125,6 @@ public class PostService {
         postOutputDto.setSubtitle(post.getSubtitle());
         postOutputDto.setDescription(post.getDescription());
 
-        // Set image data if it exists
         if (post.getImageData() != null) {
             postOutputDto.setImgdata(ImageUtil.decompressImage(post.getImageData().getImageData()));
         }

@@ -1,14 +1,14 @@
 package nl.novi.LivingInSync.controller;
 
-import nl.novi.LivingInSync.exception.ResourceNotFoundException;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import nl.novi.LivingInSync.dto.input.PostInputDto;
 import nl.novi.LivingInSync.dto.output.PostOutputDto;
+import nl.novi.LivingInSync.exception.ResourceNotFoundException;
 import nl.novi.LivingInSync.service.PostService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +51,7 @@ public class PostController {
         postInputDto.setTitle(title);
         postInputDto.setSubtitle(subtitle);
         postInputDto.setDescription(description);
-        postInputDto.setImage(image); // Make sure image is set correctly
+        postInputDto.setImage(image);
 
         Long id = postService.createPost(postInputDto, userDetails);
 
@@ -60,7 +60,6 @@ public class PostController {
 
         return ResponseEntity.created(uri).body(id);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<PostOutputDto> getPost(@PathVariable Long id) {
@@ -73,7 +72,6 @@ public class PostController {
         List<PostOutputDto> posts = postService.getAllPosts();
         return ResponseEntity.ok(posts);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updatePost(

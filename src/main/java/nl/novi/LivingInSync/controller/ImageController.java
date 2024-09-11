@@ -6,6 +6,7 @@ import nl.novi.LivingInSync.model.Post;
 import nl.novi.LivingInSync.repository.ImageDataRepository;
 import nl.novi.LivingInSync.repository.PostRepository;
 import nl.novi.LivingInSync.service.ImageDataService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +30,6 @@ public class ImageController {
         this.postRepository = postRepository;
     }
 
-    @PostMapping
-    public ResponseEntity<Object> uploadImage(@RequestParam("file")MultipartFile multipartFile, @RequestParam Long id) throws IOException {
-        String image = imageDataService.uploadImage(multipartFile, id);
-        return ResponseEntity.ok("image has been uploaded, " + image);
-    }
-
-    //Je kunt verschillende types ontvangen, zoals pdf of image jpg. moet ik dat definieren?
-    //MediaType.IMAGE_JPEG
     @GetMapping("/{id}")
     public ResponseEntity<Object> downloadImage(@PathVariable Long id) throws IOException {
         byte[] image = imageDataService.downloadImage(id);
@@ -45,5 +38,15 @@ public class ImageController {
         MediaType mediaType = MediaType.valueOf(dbImageData.get().getType());
         return ResponseEntity.ok().contentType(mediaType).body(image);
     }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> updateImage(
+            @RequestParam("file") MultipartFile multipartFile,
+            @PathVariable Long id) throws IOException {
+
+        String image = imageDataService.uploadImage(multipartFile, id);
+        return ResponseEntity.ok("Image has been updated: " + image);
+    }
+
 
 }

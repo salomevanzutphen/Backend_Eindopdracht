@@ -1,4 +1,4 @@
-package com.example.serviceTest;
+package com.testing.serviceTest;
 
 import nl.novi.LivingInSync.dto.input.CycleInputDto;
 import nl.novi.LivingInSync.dto.output.CycleOutputDto;
@@ -184,4 +184,5 @@ public class CycleServiceTest {
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> cycleService.updateCycleForUser(cycleInputDto, userDetails));
     }
+
 }
