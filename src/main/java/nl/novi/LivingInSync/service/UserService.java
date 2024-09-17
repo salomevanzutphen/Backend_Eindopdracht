@@ -1,6 +1,7 @@
 package nl.novi.LivingInSync.service;
 
 import nl.novi.LivingInSync.dto.UserDto;
+import nl.novi.LivingInSync.exception.EmailAlreadyExistsException;
 import nl.novi.LivingInSync.model.User;
 import nl.novi.LivingInSync.model.Authority;
 import nl.novi.LivingInSync.repository.UserRepository;
@@ -32,7 +33,7 @@ public class UserService {
         }
 
         if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new IllegalArgumentException("Email already exists.");
+            throw new EmailAlreadyExistsException("Email already exists.");
         }
 
         User newUser = toUser(userDTO);
@@ -44,26 +45,24 @@ public class UserService {
     public void updateUser(String username, UserDto userDTO) {
         User currentUser = findUserByUsername(username);
 
+        // Check if the new email is different from the current email and already exists in the database
         if (!currentUser.getEmail().equals(userDTO.getEmail()) && userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new IllegalArgumentException("Email already exists.");
+            throw new EmailAlreadyExistsException("Email already exists.");
         }
 
         updateUserDetails(currentUser, userDTO);
         userRepository.save(currentUser);
     }
 
-
     public void deleteUser(String username) {
         User currentUser = findUserByUsername(username);
         userRepository.delete(currentUser);
     }
 
-
     public UserDto getUser(String username) {
         User currentUser = findUserByUsername(username);
         return toUserDTO(currentUser);
     }
-
 
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -73,11 +72,7 @@ public class UserService {
     private User toUser(UserDto userDTO) {
         User user = new User();
         user.setUsername(userDTO.getUsername());
-
-        user.setPassword(userDTO.getPassword());
-
         user.setPassword(passwordEncoder().encode(userDTO.getPassword()));
-
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setBirthday(userDTO.getBirthday());
@@ -105,10 +100,7 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setBirthday(userDTO.getBirthday());
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            user.setPassword(userDTO.getPassword());
             user.setPassword(passwordEncoder().encode(userDTO.getPassword()));
         }
     }
-
-
 }

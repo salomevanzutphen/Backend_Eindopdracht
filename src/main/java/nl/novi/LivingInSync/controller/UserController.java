@@ -1,6 +1,7 @@
 package nl.novi.LivingInSync.controller;
 
 import nl.novi.LivingInSync.dto.UserDto;
+import nl.novi.LivingInSync.exception.EmailAlreadyExistsException;
 import nl.novi.LivingInSync.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,5 +45,17 @@ public class UserController {
         String username = authentication.getName();
         UserDto userDTO = userService.getUser(username);
         return ResponseEntity.ok(userDTO);
+    }
+
+    // Exception handler for EmailAlreadyExistsException
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    // Generic exception handler for other exceptions
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating user details. Please try again.");
     }
 }
